@@ -106,6 +106,28 @@ static double scaling_factor(void) {
     return (dpi / 96.0);
 }
 
+void add_fractal_iteration(struct PointListElement element) {
+  int* x_start = element->point.x;
+  int* y_start = element->point.y;
+  int* x_end = element->next->point.x;
+  int* y_end = element->next->point.y
+
+  int x_vec = *x_end - *x_start;
+  int y_vec = *y_end - *y_start;
+
+  int x_new_1 = x_vec / 3;
+  int y_new_1 = y_vec / 3;
+
+  int x_new_2 = x_vec / 3 * 2;
+  int y_new_2 = y_vec / 3 * 2;
+
+  //TODO: calculate outstanding triangle position
+  struct PointListElement new_1 = point_list_new_element(x_new_1, y_new_1);
+  point_list_insert(element, new_1);
+  struct PointListElement new_2 = point_list_new_element(x_new_2, y_new_2);
+  point_list_insert(new_1, new_2);
+}
+
 static void draw_fractal() {
   if (unlock_indicator_surface == NULL) {
       button_diameter_physical = ceil(scaling_factor() * BUTTON_DIAMETER);
