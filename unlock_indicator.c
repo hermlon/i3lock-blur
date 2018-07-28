@@ -23,6 +23,8 @@
 #include "xcb.h"
 #include "randr.h"
 
+#include "point_list.h"
+
 #define BUTTON_RADIUS 90
 #define BUTTON_SPACE (BUTTON_RADIUS + 5)
 #define BUTTON_CENTER (BUTTON_RADIUS + 5)
@@ -104,7 +106,52 @@ static double scaling_factor(void) {
     return (dpi / 96.0);
 }
 
+static void draw_fractal() {
+  if (unlock_indicator_surface == NULL) {
+      button_diameter_physical = ceil(scaling_factor() * BUTTON_DIAMETER);
+      DEBUG("scaling_factor is %.f, physical diameter is %d px\n",
+            scaling_factor(), button_diameter_physical);
+      unlock_indicator_surface = cairo_image_surface_create(
+          CAIRO_FORMAT_ARGB32, button_diameter_physical,
+          button_diameter_physical);
+  }
+
+  cairo_t *ctx = cairo_create(unlock_indicator_surface);
+  /* clear the surface */
+  cairo_save(ctx);
+  cairo_set_operator(ctx, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(ctx);
+  cairo_restore(ctx);
+
+  cairo_set_source_rgb(ctx, 255, 255, 255);
+  cairo_set_line_width(ctx, 2.0);
+
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /* move to start position */
+  cairo_move_to(ctx, BUTTON_CENTER, 0);
+  PointList coords = point_list_new_element(BUTTON_CENTER, 0);
+
+  coords->next = point_list_new_element(BUTTON_DIAMETER, BUTTON_DIAMETER);
+  coords->next->next = point_list_new_element(0, BUTTON_DIAMETER);
+
+  /* draw lines between points */
+  PointList next = coords;
+  while(next != 0) {
+    cairo_line_to(ctx, next->point.x, next->point.y);
+    next = next->next;
+  }
+  /* back to the start point */
+  cairo_line_to(ctx, coords->point.x, coords->point.y);
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  cairo_stroke(ctx);
+}
+
 static void draw_unlock_indicator() {
+  draw_fractal();
+  return;
     /* Initialise the surface if not yet done */
     if (unlock_indicator_surface == NULL) {
         button_diameter_physical = ceil(scaling_factor() * BUTTON_DIAMETER);

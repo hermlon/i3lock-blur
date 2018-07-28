@@ -1,0 +1,2 @@
+../../i3lock-blur/Makefile : ../../i3lock-blur/Makefile.in
+	@ echo 'REMOVED,,,' >$@

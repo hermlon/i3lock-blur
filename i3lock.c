@@ -63,7 +63,7 @@ static void maybe_close_sleep_lock_fd(void);
 
 /* We need this for libxkbfile */
 Display *display;
-char color[7] = "ffffff";
+char color[7] = "000000"; // changed to black
 uint32_t last_resolution[2];
 xcb_window_t win;
 static xcb_cursor_t cursor;
