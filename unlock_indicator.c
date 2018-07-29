@@ -106,7 +106,7 @@ static double scaling_factor(void) {
     return (dpi / 96.0);
 }
 
-void add_fractal_iteration(struct PointListElement* element) {
+void add_fractal_iteration(struct PointListElement* element, int length) {
   int x_start = element->point.x;
   int y_start = element->point.y;
   int x_end = element->next->point.x;
@@ -130,7 +130,6 @@ void add_fractal_iteration(struct PointListElement* element) {
   int x_orth = y_vec;
   int y_orth = -x_vec;
   /* with a specific length */
-  int length = 10;
   int x_new_3 = x_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
   int y_new_3 = y_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
 
@@ -145,8 +144,23 @@ void add_fractal_iteration(struct PointListElement* element) {
   point_list_insert(new_3, new_2);
 }
 
-void add_regular_polygon(PointListElement* start, int vertices, int radius) {
-  // BUTTON_CENTER
+struct PointListElement* get_regular_polygon(int vertices, int radius) {
+  struct PointListElement* coords = NULL;
+  struct PointListElement* last;
+  for (size_t i = 0; i < vertices; i++) {
+    /* add comment explaining this formular when it works. It does -> no need to explain it anymore */
+    int x = round(radius * sin((i+1) * 2 * M_PI / vertices));
+    int y = round(radius * cos((i+1) * 2 * M_PI / vertices));
+    struct PointListElement* point = point_list_new_element(BUTTON_CENTER + x, BUTTON_CENTER - y);
+    if(coords != NULL) {
+      point_list_insert(last, point);
+    }
+    else {
+      coords = point;
+    }
+    last = point;
+  }
+  return coords;
 }
 
 static void draw_fractal() {
@@ -170,27 +184,14 @@ static void draw_fractal() {
   cairo_set_line_width(ctx, 2.0);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /* move to start position */
-  cairo_move_to(ctx, BUTTON_CENTER - 100, BUTTON_CENTER + 100);
-  PointList coords = point_list_new_element(BUTTON_CENTER - 100, BUTTON_CENTER + 100);
 
-  coords->next = point_list_new_element(BUTTON_CENTER + 100, BUTTON_CENTER + 100);
-  coords->next->next = point_list_new_element(BUTTON_CENTER, BUTTON_CENTER + 100);
+  PointList coords = get_regular_polygon(8, 90);
 
-  add_regular_polygon(coords, 3);
-
-  add_fractal_iteration(coords->next);
-
-  int col_r[] = {0, 255, 0, 255, 255};
-  int col_g[] = {255, 0, 0, 255, 255};
-  int col_b[] = {255, 255, 255, 0, 255};
   /* draw lines between points */
   PointList next = coords;
+  cairo_move_to(ctx, next->point.x, next->point.y);
   int i = 0;
   while(next != 0) {
-    printf("%d\n", i);
-    cairo_set_source_rgb(ctx, col_r[i%6], col_g[i%6], col_b[i%6]);
-    cairo_set_line_width(ctx, 2.0);
     cairo_line_to(ctx, next->point.x, next->point.y);
     cairo_stroke(ctx);
     cairo_move_to(ctx, next->point.x, next->point.y);
