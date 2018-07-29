@@ -25,7 +25,7 @@
 
 #include "point_list.h"
 
-#define BUTTON_RADIUS 90
+#define BUTTON_RADIUS 300
 #define BUTTON_SPACE (BUTTON_RADIUS + 5)
 #define BUTTON_CENTER (BUTTON_RADIUS + 5)
 #define BUTTON_DIAMETER (2 * BUTTON_SPACE)
@@ -106,14 +106,15 @@ static double scaling_factor(void) {
     return (dpi / 96.0);
 }
 
-void add_fractal_iteration(struct PointListElement element) {
-  int* x_start = element->point.x;
-  int* y_start = element->point.y;
-  int* x_end = element->next->point.x;
-  int* y_end = element->next->point.y
+void add_fractal_iteration(struct PointListElement* element) {
+  int x_start = element->point.x;
+  int y_start = element->point.y;
+  int x_end = element->next->point.x;
+  int y_end = element->next->point.y;
 
-  int x_vec = *x_end - *x_start;
-  int y_vec = *y_end - *y_start;
+  /* vector from start to end */
+  int x_vec = x_end - x_start;
+  int y_vec = y_end - y_start;
 
   int x_new_1 = x_vec / 3;
   int y_new_1 = y_vec / 3;
@@ -121,11 +122,31 @@ void add_fractal_iteration(struct PointListElement element) {
   int x_new_2 = x_vec / 3 * 2;
   int y_new_2 = y_vec / 3 * 2;
 
-  //TODO: calculate outstanding triangle position
-  struct PointListElement new_1 = point_list_new_element(x_new_1, y_new_1);
+  /* outstanding triangle point */
+  /* position vector of the middle */
+  int x_middle_point = x_start + x_vec / 2;
+  int y_middle_point = y_start + y_vec / 2;
+  /* a orthogonal vector to vec */
+  int x_orth = y_vec;
+  int y_orth = -x_vec;
+  /* with a specific length */
+  int length = 10;
+  int x_new_3 = x_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
+  int y_new_3 = y_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
+
+
+  struct PointListElement* new_1 = point_list_new_element(x_start + x_new_1, y_start + y_new_1);
   point_list_insert(element, new_1);
-  struct PointListElement new_2 = point_list_new_element(x_new_2, y_new_2);
-  point_list_insert(new_1, new_2);
+
+  struct PointListElement* new_3 = point_list_new_element(x_middle_point + x_new_3, y_middle_point + y_new_3);
+  point_list_insert(new_1, new_3);
+
+  struct PointListElement* new_2 = point_list_new_element(x_start + x_new_2, y_start + y_new_2);
+  point_list_insert(new_3, new_2);
+}
+
+void add_regular_polygon(PointListElement* start, int vertices, int radius) {
+  // BUTTON_CENTER
 }
 
 static void draw_fractal() {
@@ -148,21 +169,33 @@ static void draw_fractal() {
   cairo_set_source_rgb(ctx, 255, 255, 255);
   cairo_set_line_width(ctx, 2.0);
 
-
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* move to start position */
-  cairo_move_to(ctx, BUTTON_CENTER, 0);
-  PointList coords = point_list_new_element(BUTTON_CENTER, 0);
+  cairo_move_to(ctx, BUTTON_CENTER - 100, BUTTON_CENTER + 100);
+  PointList coords = point_list_new_element(BUTTON_CENTER - 100, BUTTON_CENTER + 100);
 
-  coords->next = point_list_new_element(BUTTON_DIAMETER, BUTTON_DIAMETER);
-  coords->next->next = point_list_new_element(0, BUTTON_DIAMETER);
+  coords->next = point_list_new_element(BUTTON_CENTER + 100, BUTTON_CENTER + 100);
+  coords->next->next = point_list_new_element(BUTTON_CENTER, BUTTON_CENTER + 100);
 
+  add_regular_polygon(coords, 3);
+
+  add_fractal_iteration(coords->next);
+
+  int col_r[] = {0, 255, 0, 255, 255};
+  int col_g[] = {255, 0, 0, 255, 255};
+  int col_b[] = {255, 255, 255, 0, 255};
   /* draw lines between points */
   PointList next = coords;
+  int i = 0;
   while(next != 0) {
+    printf("%d\n", i);
+    cairo_set_source_rgb(ctx, col_r[i%6], col_g[i%6], col_b[i%6]);
+    cairo_set_line_width(ctx, 2.0);
     cairo_line_to(ctx, next->point.x, next->point.y);
+    cairo_stroke(ctx);
+    cairo_move_to(ctx, next->point.x, next->point.y);
     next = next->next;
+    i ++;
   }
   /* back to the start point */
   cairo_line_to(ctx, coords->point.x, coords->point.y);
