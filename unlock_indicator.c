@@ -171,7 +171,6 @@ struct PointListElement* get_regular_polygon(int vertices, int radius) {
 }
 
 static void draw_point_list(cairo_t* ctx, PointList next) {
-  //PointList coords = next;
   /* draw lines between points */
   cairo_move_to(ctx, next->point.x, next->point.y);
   int i = 0;
@@ -182,10 +181,9 @@ static void draw_point_list(cairo_t* ctx, PointList next) {
     next = next->next;
     i ++;
   }
-  /* back to the start point */
-  //cairo_line_to(ctx, coords->point.x, coords->point.y);
 }
 
+// TODO: don't add on 'non vertical' edges
 static int get_random_pos_level(struct PointListElement* coords) {
   int randpos = -1;
   do {
@@ -258,7 +256,7 @@ static void draw_fractal() {
         if (unlock_state == STATE_KEY_ACTIVE) {
             /* For normal keys, we use a lighter green. */
             cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
-            //TODO: adjust length
+
             struct PointListElement* previos_el = point_list_get(coords, get_random_pos_level(coords));
             int lvl = point_list_get_new_level(previos_el);
             add_fractal_iteration(previos_el, (int)(60 / lvl));
