@@ -95,6 +95,8 @@ auth_state_t auth_state;
 /* A surface for the unlock indicator */
 static cairo_surface_t *unlock_indicator_surface = NULL;
 
+static PointList coords = NULL;
+
 /*
  * Returns the scaling factor of the current screen. E.g., on a 227 DPI MacBook
  * Pro 13" Retina screen, the scaling factor is 227/96 = 2.36.
@@ -209,7 +211,10 @@ static void draw_fractal() {
 
     /////////////////////////////////////////////////////////////////////////////
 
-    PointList coords = get_regular_polygon(8, 90);
+    // initialize if first call
+    if(coords == NULL) {
+      coords = get_regular_polygon(3, 90);
+    }
 
     /* Use the appropriate color for the different PAM states
      * (currently verifying, wrong password, or default) */
@@ -242,7 +247,7 @@ static void draw_fractal() {
         if (unlock_state == STATE_KEY_ACTIVE) {
             /* For normal keys, we use a lighter green. */
             cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
-            add_fractal_iteration(point_list_get(coords, add_element_pos), 10);
+            add_fractal_iteration(point_list_get(coords, add_element_pos), 20);
             //add_fractal_iteration(coords, 10);
         } else {
             /* For backspace, we use red. */
