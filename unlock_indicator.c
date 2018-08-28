@@ -134,13 +134,16 @@ void add_fractal_iteration(struct PointListElement* element, int length) {
   int y_new_3 = y_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
 
 
-  struct PointListElement* new_1 = point_list_new_element(x_start + x_new_1, y_start + y_new_1);
+  struct PointListElement* new_1 =
+    point_list_new_element(x_start + x_new_1, y_start + y_new_1);
   point_list_insert(element, new_1);
 
-  struct PointListElement* new_3 = point_list_new_element(x_middle_point + x_new_3, y_middle_point + y_new_3);
+  struct PointListElement* new_3 =
+    point_list_new_element(x_middle_point + x_new_3, y_middle_point + y_new_3);
   point_list_insert(new_1, new_3);
 
-  struct PointListElement* new_2 = point_list_new_element(x_start + x_new_2, y_start + y_new_2);
+  struct PointListElement* new_2 =
+    point_list_new_element(x_start + x_new_2, y_start + y_new_2);
   point_list_insert(new_3, new_2);
 }
 
@@ -148,10 +151,12 @@ struct PointListElement* get_regular_polygon(int vertices, int radius) {
   struct PointListElement* coords = NULL;
   struct PointListElement* last;
   for (size_t i = 0; i < vertices; i++) {
-    /* add comment explaining this formular when it works. It does -> no need to explain it anymore */
+    /* add comment explaining this formular when it works.
+     It does -> no need to explain it anymore */
     int x = round(radius * sin((i+1) * 2 * M_PI / vertices));
     int y = round(radius * cos((i+1) * 2 * M_PI / vertices));
-    struct PointListElement* point = point_list_new_element(BUTTON_CENTER + x, BUTTON_CENTER - y);
+    struct PointListElement* point =
+      point_list_new_element(BUTTON_CENTER + x, BUTTON_CENTER - y);
     if(coords != NULL) {
       point_list_insert(last, point);
     }
@@ -161,6 +166,22 @@ struct PointListElement* get_regular_polygon(int vertices, int radius) {
     last = point;
   }
   return coords;
+}
+
+static void draw_point_list(cairo_t* ctx, PointList next) {
+  PointList coords = next;
+  /* draw lines between points */
+  cairo_move_to(ctx, next->point.x, next->point.y);
+  int i = 0;
+  while(next != 0) {
+    cairo_line_to(ctx, next->point.x, next->point.y);
+    cairo_stroke(ctx);
+    cairo_move_to(ctx, next->point.x, next->point.y);
+    next = next->next;
+    i ++;
+  }
+  /* back to the start point */
+  cairo_line_to(ctx, coords->point.x, coords->point.y);
 }
 
 static void draw_fractal() {
@@ -180,29 +201,61 @@ static void draw_fractal() {
   cairo_paint(ctx);
   cairo_restore(ctx);
 
-  cairo_set_source_rgb(ctx, 255, 255, 255);
-  cairo_set_line_width(ctx, 2.0);
+  if (unlock_indicator &&
+      (unlock_state >= STATE_KEY_PRESSED || auth_state > STATE_AUTH_IDLE)) {
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    cairo_set_source_rgb(ctx, 255, 255, 255);
+    cairo_set_line_width(ctx, 2.0);
 
-  PointList coords = get_regular_polygon(8, 90);
+    /////////////////////////////////////////////////////////////////////////////
 
-  /* draw lines between points */
-  PointList next = coords;
-  cairo_move_to(ctx, next->point.x, next->point.y);
-  int i = 0;
-  while(next != 0) {
-    cairo_line_to(ctx, next->point.x, next->point.y);
+    PointList coords = get_regular_polygon(8, 90);
+
+    /* Use the appropriate color for the different PAM states
+     * (currently verifying, wrong password, or default) */
+    switch (auth_state) {
+        case STATE_AUTH_VERIFY:
+        case STATE_AUTH_LOCK:
+            cairo_set_source_rgba(ctx, 0, 114.0 / 255, 255.0 / 255, 0.75);
+            break;
+        case STATE_AUTH_WRONG:
+        case STATE_I3LOCK_LOCK_FAILED:
+            cairo_set_source_rgba(ctx, 250.0 / 255, 0, 0, 0.75);
+            break;
+        default:
+            if (unlock_state == STATE_NOTHING_TO_DELETE) {
+                cairo_set_source_rgba(ctx, 250.0 / 255, 0, 0, 0.75);
+                break;
+            }
+            cairo_set_source_rgba(ctx, 255, 255, 255, 1.0);
+            break;
+    }
+
+    /* After the user pressed any valid key or the backspace key, we
+     * highlight a random part of the unlock indicator to confirm this
+     * keypress. */
+    if (unlock_state == STATE_KEY_ACTIVE ||
+        unlock_state == STATE_BACKSPACE_ACTIVE) {
+
+        double highlight_start = rand();
+
+        if (unlock_state == STATE_KEY_ACTIVE) {
+            /* For normal keys, we use a lighter green. */
+            cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
+
+            add_fractal_iteration(point_list_get(coords, 0), 10);
+        } else {
+            /* For backspace, we use red. */
+            cairo_set_source_rgb(ctx, 219.0 / 255, 51.0 / 255, 0);
+        }
+
+    }
+
+    draw_point_list(ctx, coords);
+
+    /////////////////////////////////////////////////////////////////////////////
     cairo_stroke(ctx);
-    cairo_move_to(ctx, next->point.x, next->point.y);
-    next = next->next;
-    i ++;
   }
-  /* back to the start point */
-  cairo_line_to(ctx, coords->point.x, coords->point.y);
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  cairo_stroke(ctx);
 }
 
 static void draw_unlock_indicator() {
