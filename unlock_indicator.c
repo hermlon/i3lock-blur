@@ -112,7 +112,7 @@ void add_fractal_iteration(struct PointListElement* element, int length) {
   int x_end = element->next->point.x;
   int y_end = element->next->point.y;
 
-  /* vector from start to end */
+  // vector from start to end
   int x_vec = x_end - x_start;
   int y_vec = y_end - y_start;
 
@@ -122,17 +122,16 @@ void add_fractal_iteration(struct PointListElement* element, int length) {
   int x_new_2 = x_vec / 3 * 2;
   int y_new_2 = y_vec / 3 * 2;
 
-  /* outstanding triangle point */
-  /* position vector of the middle */
+  // outstanding triangle point
+  // position vector of the middle
   int x_middle_point = x_start + x_vec / 2;
   int y_middle_point = y_start + y_vec / 2;
-  /* a orthogonal vector to vec */
+  // a orthogonal vector to vec
   int x_orth = y_vec;
   int y_orth = -x_vec;
-  /* with a specific length */
+  // with a specific length
   int x_new_3 = x_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
   int y_new_3 = y_orth * length / round(sqrt(pow(x_orth, 2) + pow(y_orth, 2)));
-
 
   struct PointListElement* new_1 =
     point_list_new_element(x_start + x_new_1, y_start + y_new_1);
@@ -150,7 +149,8 @@ void add_fractal_iteration(struct PointListElement* element, int length) {
 struct PointListElement* get_regular_polygon(int vertices, int radius) {
   struct PointListElement* coords = NULL;
   struct PointListElement* last;
-  for (size_t i = 0; i < vertices; i++) {
+  // vertices + 1 to close the shape
+  for (size_t i = 0; i < vertices + 1; i++) {
     /* add comment explaining this formular when it works.
      It does -> no need to explain it anymore */
     int x = round(radius * sin((i+1) * 2 * M_PI / vertices));
@@ -169,7 +169,7 @@ struct PointListElement* get_regular_polygon(int vertices, int radius) {
 }
 
 static void draw_point_list(cairo_t* ctx, PointList next) {
-  PointList coords = next;
+  //PointList coords = next;
   /* draw lines between points */
   cairo_move_to(ctx, next->point.x, next->point.y);
   int i = 0;
@@ -181,7 +181,7 @@ static void draw_point_list(cairo_t* ctx, PointList next) {
     i ++;
   }
   /* back to the start point */
-  cairo_line_to(ctx, coords->point.x, coords->point.y);
+  //cairo_line_to(ctx, coords->point.x, coords->point.y);
 }
 
 static void draw_fractal() {
@@ -237,13 +237,13 @@ static void draw_fractal() {
     if (unlock_state == STATE_KEY_ACTIVE ||
         unlock_state == STATE_BACKSPACE_ACTIVE) {
 
-        double highlight_start = rand();
+        int add_element_pos = rand() % point_list_size(coords);
 
         if (unlock_state == STATE_KEY_ACTIVE) {
             /* For normal keys, we use a lighter green. */
             cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
-
-            add_fractal_iteration(point_list_get(coords, 0), 10);
+            add_fractal_iteration(point_list_get(coords, add_element_pos), 10);
+            //add_fractal_iteration(coords, 10);
         } else {
             /* For backspace, we use red. */
             cairo_set_source_rgb(ctx, 219.0 / 255, 51.0 / 255, 0);

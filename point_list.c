@@ -14,6 +14,16 @@ struct PointListElement* point_list_get(struct PointListElement* pointlist, int 
   return last;
 }
 
+int point_list_size(struct PointListElement* pointlist) {
+  struct PointListElement* last = pointlist;
+  int size = 0;
+  while(last->next != 0) {
+    last = last->next;
+    size ++;
+  }
+  return size;
+}
+
 struct PointListElement* point_list_new_element(int x, int y) {
   struct PointListElement* ple = malloc(sizeof(struct PointListElement));
   ple->point.x = x;
