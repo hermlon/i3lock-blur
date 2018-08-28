@@ -186,6 +186,20 @@ static void draw_point_list(cairo_t* ctx, PointList next) {
   //cairo_line_to(ctx, coords->point.x, coords->point.y);
 }
 
+static int get_random_pos_level(struct PointListElement* coords) {
+  int randpos = -1;
+  do {
+     int rp = rand() % point_list_size(coords);
+     int level = point_list_get(coords, rp)->level;
+
+     // chance gets lower the higher the level gets
+     if(rand() % level == 0) {
+       randpos = rp;
+     }
+  } while(randpos == -1);
+  return randpos;
+}
+
 static void draw_fractal() {
   if (unlock_indicator_surface == NULL) {
       button_diameter_physical = ceil(scaling_factor() * BUTTON_DIAMETER);
@@ -241,14 +255,13 @@ static void draw_fractal() {
      * keypress. */
     if (unlock_state == STATE_KEY_ACTIVE ||
         unlock_state == STATE_BACKSPACE_ACTIVE) {
-
-        int add_element_pos = rand() % point_list_size(coords);
-
         if (unlock_state == STATE_KEY_ACTIVE) {
             /* For normal keys, we use a lighter green. */
             cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
-            add_fractal_iteration(point_list_get(coords, add_element_pos), 20);
-            //add_fractal_iteration(coords, 10);
+            //TODO: adjust length
+            struct PointListElement* previos_el = point_list_get(coords, get_random_pos_level(coords));
+            int lvl = point_list_get_new_level(previos_el);
+            add_fractal_iteration(previos_el, (int)(60 / lvl));
         } else {
             /* For backspace, we use red. */
             cairo_set_source_rgb(ctx, 219.0 / 255, 51.0 / 255, 0);
