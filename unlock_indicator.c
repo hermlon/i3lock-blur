@@ -70,6 +70,8 @@ extern Display *display;
 
 /* Whether to draw fractal */
 extern bool fractal;
+/* points of polygon */
+extern int polygon;
 
 /* Whether the failed attempts should be displayed. */
 extern bool show_failed_attempts;
@@ -234,7 +236,7 @@ static void draw_fractal() {
 
     // initialize if first call
     if(coords == NULL) {
-      coords = get_regular_polygon(3, 90);
+      coords = get_regular_polygon(polygon, BUTTON_RADIUS);
     }
 
     /* Use the appropriate color for the different PAM states

@@ -104,6 +104,7 @@ cairo_surface_t *img = NULL;
 bool tile = false;
 bool fuzzy = false;
 bool fractal = false;
+int polygon = 3;
 bool once = false;
 int blur_radius = 0;
 float blur_sigma = 0;
@@ -1012,6 +1013,7 @@ int main(int argc, char *argv[]) {
         {"tiling", no_argument, NULL, 't'},
         {"fuzzy", no_argument, NULL, 'f'},
         {"fractal", no_argument, NULL, 'k'},
+        {"polygon", required_argument, NULL, 'x'},
         {"once", no_argument, NULL, 'o'},
         {"radius", required_argument, NULL, 'r'},
         {"sigma", required_argument, NULL, 's'},
@@ -1071,6 +1073,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'k':
                 fractal = true;
+                break;
+            case 'x':
+                sscanf(optarg, "%d", &polygon);
                 break;
             case 'r':
                 sscanf(optarg, "%d", &blur_radius);
