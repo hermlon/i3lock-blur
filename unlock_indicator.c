@@ -25,7 +25,7 @@
 
 #include "point_list.h"
 
-#define BUTTON_RADIUS 300
+#define BUTTON_RADIUS 90
 #define BUTTON_SPACE (BUTTON_RADIUS + 5)
 #define BUTTON_CENTER (BUTTON_RADIUS + 5)
 #define BUTTON_DIAMETER (2 * BUTTON_SPACE)
