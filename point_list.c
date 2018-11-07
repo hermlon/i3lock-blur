@@ -8,6 +8,12 @@ void point_list_insert(struct PointListElement* el, struct PointListElement* new
   el->level = level;
 }
 
+// removes the next element after remove_el
+void point_list_remove(struct PointListElement* remove_el) {
+  remove_el->next = remove_el->next->next;
+  //TODO: speicher von remove_el->next freigeben?
+}
+
 // returns the new level for an element added between el and el->next
 int point_list_get_new_level(struct PointListElement* el) {
   if(el->next == 0) {

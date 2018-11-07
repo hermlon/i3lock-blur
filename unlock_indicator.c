@@ -179,19 +179,20 @@ struct PointListElement* get_regular_polygon(int vertices, int radius) {
 }
 
 static void draw_point_list(cairo_t* ctx, PointList next) {
-  /* draw lines between points */
-  cairo_move_to(ctx, next->point.x, next->point.y);
-  int i = 0;
-  while(next != 0) {
-    cairo_line_to(ctx, next->point.x, next->point.y);
-    cairo_stroke(ctx);
+  if(next != NULL) {
+    /* draw lines between points */
     cairo_move_to(ctx, next->point.x, next->point.y);
-    next = next->next;
-    i ++;
+    int i = 0;
+    while(next != 0) {
+      cairo_line_to(ctx, next->point.x, next->point.y);
+      cairo_stroke(ctx);
+      cairo_move_to(ctx, next->point.x, next->point.y);
+      next = next->next;
+      i ++;
+    }
   }
 }
 
-// TODO: don't add on 'non vertical' edges
 static int get_random_pos_level(struct PointListElement* coords) {
   int randpos = -1;
   do {
@@ -245,6 +246,7 @@ static void draw_fractal() {
             break;
         case STATE_AUTH_WRONG:
         case STATE_I3LOCK_LOCK_FAILED:
+            coords = NULL;
             cairo_set_source_rgba(ctx, 250.0 / 255, 0, 0, 0.75);
             break;
         default:
@@ -259,20 +261,22 @@ static void draw_fractal() {
     /* After the user pressed any valid key or the backspace key, we
      * highlight a random part of the unlock indicator to confirm this
      * keypress. */
-    if (unlock_state == STATE_KEY_ACTIVE ||
-        unlock_state == STATE_BACKSPACE_ACTIVE) {
-        if (unlock_state == STATE_KEY_ACTIVE) {
-            /* For normal keys, we use a lighter green. */
-            cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
+    if (coords != NULL) {
+      struct PointListElement* previos_el = point_list_get(coords, get_random_pos_level(coords));
+      if (unlock_state == STATE_KEY_ACTIVE) {
+          /* For normal keys, we use a lighter green. */
+          cairo_set_source_rgb(ctx, 51.0 / 255, 219.0 / 255, 0);
 
-            struct PointListElement* previos_el = point_list_get(coords, get_random_pos_level(coords));
-            int lvl = point_list_get_new_level(previos_el);
-            add_fractal_iteration(previos_el);
-        } else {
-            /* For backspace, we use red. */
-            cairo_set_source_rgb(ctx, 219.0 / 255, 51.0 / 255, 0);
-        }
 
+
+          add_fractal_iteration(previos_el);
+      } else if (unlock_state == STATE_BACKSPACE_ACTIVE){
+          /* For backspace, we use red. */
+          cairo_set_source_rgb(ctx, 219.0 / 255, 51.0 / 255, 0);
+          point_list_remove(coords);
+          point_list_remove(coords);
+          point_list_remove(coords);
+      }
     }
 
     draw_point_list(ctx, coords);
@@ -608,6 +612,7 @@ void redraw_unlock_indicator(void) {
  *
  */
 void clear_indicator(void) {
+    coords = NULL;
     if (input_position == 0) {
         unlock_state = STATE_STARTED;
     } else
