@@ -103,6 +103,7 @@ const xcb_query_extension_reply_t *dam_ext_data;
 cairo_surface_t *img = NULL;
 bool tile = false;
 bool fuzzy = false;
+bool fractal = false;
 bool once = false;
 int blur_radius = 0;
 float blur_sigma = 0;
@@ -1010,6 +1011,7 @@ int main(int argc, char *argv[]) {
         {"image", required_argument, NULL, 'i'},
         {"tiling", no_argument, NULL, 't'},
         {"fuzzy", no_argument, NULL, 'f'},
+        {"fractal", no_argument, NULL, 'k'},
         {"once", no_argument, NULL, 'o'},
         {"radius", required_argument, NULL, 'r'},
         {"sigma", required_argument, NULL, 's'},
@@ -1066,6 +1068,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'f':
                 fuzzy = true;
+                break;
+            case 'k':
+                fractal = true;
                 break;
             case 'r':
                 sscanf(optarg, "%d", &blur_radius);

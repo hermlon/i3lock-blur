@@ -68,6 +68,9 @@ extern bool once;
 extern char color[7];
 extern Display *display;
 
+/* Whether to draw fractal */
+extern bool fractal;
+
 /* Whether the failed attempts should be displayed. */
 extern bool show_failed_attempts;
 /* Number of failed unlock attempts. */
@@ -123,10 +126,10 @@ void add_fractal_iteration(struct PointListElement* element) {
 
   int x_new_2 = x_vec / 3 * 2;
   int y_new_2 = y_vec / 3 * 2;
-  
+
   // the third of the whole length
   int third_length = round(sqrt(pow(x_new_1, 2) + pow(y_new_1, 2)));
-  // the length of the new triangle 
+  // the length of the new triangle
   int length = sqrt(pow(third_length, 2) - pow(third_length, 2) / 4);
 
   // outstanding triangle point
@@ -280,8 +283,10 @@ static void draw_fractal() {
 }
 
 static void draw_unlock_indicator() {
-  draw_fractal();
-  return;
+  if(fractal) {
+    draw_fractal();
+    return;
+  }
     /* Initialise the surface if not yet done */
     if (unlock_indicator_surface == NULL) {
         button_diameter_physical = ceil(scaling_factor() * BUTTON_DIAMETER);
